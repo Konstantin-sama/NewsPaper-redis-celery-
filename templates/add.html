@@ -1,0 +1,75 @@
+{% extends 'flatpages/default.html' %}
+
+{% load custom_filters %}
+
+{% block title %}
+<p>Add news</p>
+
+{% endblock title %}
+
+{% block content %}
+        <table class="col-lg-12 text-center">
+            <tr>
+                <td>
+                    <b>Название</b>
+                </td>
+                <td>
+                    <b>Описание</b>
+                </td>
+                <td>
+                    <b>Автор</b>
+                </td>
+                <td>
+                    <b>Дата</b>
+                </td>
+            </tr>
+            {% for new in filter.qs %}
+                <tr>
+                    <td style="text-align: left">
+                        {{ new.title | Censor }}
+                    </td>
+                    <td style="text-align: left">
+                        {{ new.text | truncatechars:50 | Censor }}
+                    </td>
+                    <td style="text-align: left">
+                        {{ new.author }}
+                    </td>
+                    <td style="text-align: center">
+                        {{ new.dateCreation }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+{% if is_paginated %}
+
+    <!-- Если доступна предыдущая страница, то даём ссылку на неё и самую первую страницу -->
+    {% if page_obj.has_previous %}
+        <a href="?page=1">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}"><<<</a>
+    {% endif %}
+
+    <!-- Показываем только текущую страницу и ближайшие к ней, чтобы список не тянулся и не захламлял страницу -->
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <a>{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Если есть следующая страница, то даём ссылку на неё и на самую последнюю страницу -->
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">>>></a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif %}
+
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form }} <!-- Теперь нам нужна только готовая форма и кнопка -->
+    <input type="submit" value="Добавить новость/статью">
+</form>
+
+{% endblock content %}
